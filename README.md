@@ -81,6 +81,36 @@ backend web_servers    # секция бэкенд
 127.0.0.1 example.com
 ```
 
+Конфигурация haproxy:
+```
+listen stats  # веб-страница со статистикой
+        bind                    :888
+        mode                    http
+        stats                   enable
+        stats uri               /stats
+        stats refresh           5s
+        stats realm             Haproxy\ Statistics
+
+frontend example  # секция фронтенд
+        mode http
+        bind :8088
+#        default_backend web_servers
+	acl ACL_example.com hdr(host) -i example.com:8088
+	use_backend web_servers if ACL_example.com
+
+
+backend web_servers    # секция бэкенд
+        mode http
+        balance roundrobin
+        option httpchk
+        http-check send meth GET uri /index.html
+        server s1 127.0.0.1:891 check inter 3s weight 2
+        server s2 127.0.0.1:892 check inter 3s weight 3
+        server s3 127.0.0.1:893 check inter 3s weight 4
+#        server s4 127.0.0.1:894 check inter 3s weight 4
+
+```
+
 Скриншот обращений:
 ![scr2](https://github.com/WilderWein123/redu2/blob/main/img/pic2.jpg)
 
@@ -96,6 +126,27 @@ backend web_servers    # секция бэкенд
 - Настройте связку HAProxy + Nginx как было показано на лекции.
 - Настройте Nginx так, чтобы файлы .jpg выдавались самим Nginx (предварительно разместите несколько тестовых картинок в директории /var/www/), а остальные запросы переадресовывались на HAProxy, который в свою очередь переадресовывал их на два Simple Python server.
 - На проверку направьте конфигурационные файлы nginx, HAProxy, скриншоты с запросами jpg картинок и других файлов на Simple Python Server, демонстрирующие корректную настройку.
+
+Конфигурация haproxy - прежняя. Конфигурация nginx:
+```
+	server_name _;
+
+	location ~ \.jpg {
+		root /var/www;
+		
+	}
+
+	location / {
+		# First attempt to serve request as file, then
+		# as directory, then fall back to displaying a 404.
+#		try_files $uri $uri/ =404;
+		proxy_pass http://example.com:8088;
+	}
+```
+Скриншот обращений:
+![scr3](https://github.com/WilderWein123/redu2/blob/main/img/pic3.jpg)
+Здесь видим, что по запросу jpg на порт nginx у нас бинарное содержимое с заголовком графического файла JFIF, а при запросе index.html - перекидывает на "кластер" haproxy
+
 
 ---
 
