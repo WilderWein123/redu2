@@ -158,6 +158,40 @@ backend web_servers    # секция бэкенд
 - Настройте фронтенд HAProxy так, чтобы в зависимости от запрашиваемого сайта example1.local или example2.local запросы перенаправлялись на разные бэкенды HAProxy
 - На проверку направьте конфигурационный файл HAProxy, скриншоты, демонстрирующие запросы к разным фронтендам и ответам от разных бэкендов.
 
+haproxy.conf:
+```
+	acl ACL_example1.com hdr(host) -i example1.com:8088
+	use_backend example1 if ACL_example1.com
+        acl ACL_example2.com hdr(host) -i example2.com:8088
+        use_backend example2 if ACL_example2.com
+
+
+backend example1    # секция бэкенд
+        mode http
+        balance roundrobin
+        option httpchk
+        http-check send meth GET uri /index.html
+        server s1 127.0.0.1:891 check inter 3s weight 2
+        server s2 127.0.0.1:892 check inter 3s weight 3
+
+backend example2    # секция бэкенд
+        mode http
+        balance roundrobin
+        option httpchk
+        http-check send meth GET uri /index.html
+        server s3 127.0.0.1:893 check inter 3s weight 4
+        server s4 127.0.0.1:894 check inter 3s weight 4
+
+```
+hosts:
+```
+127.0.0.1 example.com
+127.0.0.1 example1.com
+127.0.0.1 example2.com
+```
+
+Скриншот выполнения:
+![scr4](https://github.com/WilderWein123/redu2/blob/main/img/pic4.jpg)
 
 ------
 
