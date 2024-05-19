@@ -68,7 +68,7 @@ backend web_servers    # секция бэкенд
 ```
 
 Скриншот обращений:
-![scr1](https://github.com/WilderWein123/redu2/blob/main/img/pic1.png)
+![scr1](https://github.com/WilderWein123/redu2/blob/main/img/pic1.jpg)
 
 ### Задание 2
 - Запустите три simple python сервера на своей виртуальной машине на разных портах
